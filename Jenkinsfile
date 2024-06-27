@@ -4,6 +4,7 @@ pipeline {
 
     environment {
         BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
+        SKIP = "FALSE"
     }
 
     stages {
@@ -25,13 +26,18 @@ pipeline {
                     // check if the conventional commit contains "refactor" or "style" 
                     def skipBuild = commitMessage =~ /(?i)(refactor|style)/
                     if (skipBuild) {
+                        SKIP = "TRUE"
                         error("Skipping build due to non-essential changes: ${commitMessage}")
+                        return
                     }
                 }
             }
         }
 
         stage('Build') {
+            when {
+                expression { env.SKIP == "FALSE" }
+            }
             steps {
                 withCredentials([file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE')]) {
                     script {
@@ -57,6 +63,9 @@ pipeline {
         }
 
         stage("Test") {
+            when {
+                expression { env.SKIP == "FALSE" }
+            }
             steps {
                 junit keepProperties: true, skipMarkingBuildUnstable: true, stdioRetention: '', testResults: 'xmlReport/output.xml'
                 cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: 'coverage.xml', 
@@ -66,6 +75,9 @@ pipeline {
         }
 
         stage('Deploy') {
+            when {
+                expression { env.SKIP == "FALSE" }
+            }
             steps {
                 echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
                 // withCredentials([
