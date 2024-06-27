@@ -2,12 +2,15 @@ pipeline {
 
     agent any
 
+    environment {
+        branchName = env.BRANCH_NAME
+    }
+
     stages {
         stage('Checkout') {
             steps {
                 script{
-                    def branchName = env.BRANCH_NAME
-                    checkout scmGit(branches: [[name: '*/${branchName}']], extensions: [], userRemoteConfigs:
+                    checkout scmGit(branches: [[name: '*/$branchName']], extensions: [], userRemoteConfigs:
                     [[credentialsId: 'hiverlab-dillonloh', url: 'git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git']])
                 }
             }
