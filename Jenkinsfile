@@ -26,7 +26,7 @@ pipeline {
                     // check if the conventional commit contains "refactor" or "style" 
                     def skipBuild = commitMessage =~ /(?i)(refactor|style)/
                     if (skipBuild) {
-                        SKIP = "TRUE"
+                        env.SKIP = "TRUE"
                         echo("Skipping build due to non-essential changes: ${commitMessage}")
                         return
                     }
