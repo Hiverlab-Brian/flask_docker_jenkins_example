@@ -1,4 +1,4 @@
-# flask-docker-jenkins-example
+# flask-docker-jenkins example
 
 This repository provides a simple template for creating unit tests for a basic Flask app using the pytest module. The unit tests can target both web pages returned by your web app and responses from API endpoints. The web app runs on port 80, so after running the code, you can access it at http://localhost or http://localhost:80.
 

@@ -1,31 +1,36 @@
 pipeline {
-    environment {
-        registry = "liseon/python-jenkins"
-        dockerImage = ''
-    }
+
     agent any
+    
     stages {
-        stage('checkout') {
+        stage('Checkout') {
             steps {
                 checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs:
-                                [[credentialsId: 'github-creds', url: 'https://github.com/Liseon617/flask-pytest-docker-jenkins.git']])
-            }
-        }
-        
-        stage('Stop previous running container') {
-            steps {
-                sh returnStatus: true, script: 'docker stop $(docker ps -a | grep ${JOB_NAME} | awk \'{print $1}\')'
-                sh returnStatus: true, script: 'docker rm ${JOB_NAME}'
+                                [[credentialsId: 'hiverlab-dillonloh', url: 'git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git']])
             }
         }
 
-        stage('Build Docker Image and Docker Container') {
+        stage('Build') {
             steps {
-                script {
-                    // img = registry + ":${env.BUILD_ID}"
-                    // println ("${img}")
-                    // dockerImage = docker.build("${img}")
-                    sh "docker compose -f docker-compose.yaml up --abort-on-container-exit --exit-code-from test"
+                withCredentials([file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE')]) {
+                    script {
+                        // Read the secret file and write its contents to .env file
+                        sh 'cat $SECRET_ENV_FILE > .env'
+                        
+                        script {
+                            def containers = sh(script: 'docker ps -a | grep ${JOB_NAME} | awk \'{print $1}\'', returnStdout: true).trim()
+                            if (containers) {
+                                sh "docker stop ${containers} || true"
+                                sh "docker rm ${containers} || true"
+                            }
+                        }
+
+                        // Ensure docker-compose.yml is present
+                        if (!fileExists('docker-compose.yml')) {
+                            error "docker-compose.yml not found"
+                        }
+                        sh "docker compose -f docker-compose.yaml up --abort-on-container-exit --exit-code-from test"
+                    }
                 }
             }
         }
@@ -41,8 +46,23 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo "Deployment complete."
-                // Assuming you have a script to configure Nginx and serve the application deployment
+                echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
+                withCredentials([
+                    sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
+                    file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
+                    string(credentialsId: 'brian-vlsdemo-vm-ip', variable: 'REMOTE_SERVER'),
+                    ]) {
+                    sshagent(['hiverlab-dillonloh']) {
+                        sh '''
+                            ssh dillon@$REMOTE_SERVER "
+                            if [ ! -d "/home/dillon/test/test-application/.git" ]; then
+                                git clone git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git /home/dillon/test/test-application;
+                            fi &&
+                            cd /home/dillon/test/test-application/ && 
+                            git pull origin main && 
+                        '''
+                    }
+               }
             }
         }
     }
@@ -52,10 +72,10 @@ pipeline {
             echo 'Pipeline succeeded!'
         }
         failure {
-            echo 'Pipeline failed'
+            echo 'Pipeline failed!'
         }
         always {
-            echo 'Pipeline completed'
+            echo 'Pipeline completed.'
         }
     }
 }
