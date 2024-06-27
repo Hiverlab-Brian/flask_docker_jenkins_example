@@ -59,7 +59,7 @@ pipeline {
                                 git clone git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git /home/dillon/test/test-application;
                             fi &&
                             cd /home/dillon/test/test-application/ && 
-                            git pull origin main && 
+                            git pull origin main
                         '''
                     }
                }
