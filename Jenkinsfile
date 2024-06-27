@@ -1,7 +1,7 @@
 pipeline {
 
     agent any
-    
+
     stages {
         stage('Checkout') {
             steps {
@@ -26,8 +26,8 @@ pipeline {
                         }
 
                         // Ensure docker-compose.yml is present
-                        if (!fileExists('docker-compose.yml')) {
-                            error "docker-compose.yml not found"
+                        if (!fileExists('docker-compose.yaml')) {
+                            error "docker-compose.yaml not found"
                         }
                         sh "docker compose -f docker-compose.yaml up --abort-on-container-exit --exit-code-from test"
                     }
