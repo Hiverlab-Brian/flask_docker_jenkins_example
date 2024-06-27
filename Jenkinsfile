@@ -78,7 +78,11 @@ pipeline {
             steps {
                 echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
                 script {
-                    def deployPath = BRANCH_NAME == 'main' ? '/home/dillon/auto-datahandler' : '/home/dillon/dev/DEV-auto-datahandler'
+                    if (BRANCH_NAME == 'main') {
+                        deployPath = '/home/dillon/auto-datahandler'
+                    } else {
+                        deployPath = '/home/dillon/dev/DEV-auto-datahandler'
+                    }
 
                     withCredentials([
                         sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
