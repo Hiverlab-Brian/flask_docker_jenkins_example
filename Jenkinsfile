@@ -21,7 +21,7 @@ pipeline {
                     echo "Commit message: ${commitMessage}"
                     
                     // check if the conventional commit message contains "refactor" or "style" 
-                    def matcher = commitMessage =~ /(?i)(refactor|style)/
+                    def matcher = commitMessage =~ /(?i)(refactor|style|ci)/
                     def match = matcher.find()
                     echo "commit skippable?: ${match}"
                     if (match) {
