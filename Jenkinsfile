@@ -87,7 +87,10 @@ pipeline {
                         ]) {
                         sshagent(['hiverlab-dillonloh']) {
                             sh '''
-                                cd ${deployPath}
+                                ssh dillon@$REMOTE_SERVER "
+                                cd $deployPath
+                                echo $deployPath
+                                echo $BRANCH_NAME"
                             '''
                         }
                     }
