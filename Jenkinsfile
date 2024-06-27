@@ -79,26 +79,21 @@ pipeline {
             steps {
                 echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
                 script {
-                    DEPLOY_PATH = BRANCH_NAME == 'main' ? '/home/dillon/auto-datahandler' : '/home/dillon/dev/DEV-auto-datahandler'
-                    echo "${DEPLOY_PATH}"
-                    echo "$DEPLOY_PATH"
+                    def deployPath = BRANCH_NAME =~ /(?i)(main)/ ? '/home/dillon/auto-datahandler' : '/home/dillon/dev/DEV-auto-datahandler'
+                    echo "${deployPath}"
+                    echo "$deployPath"
                     withCredentials([
                         sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
                         file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
                         string(credentialsId: 'brian-vlsdemo-vm-ip', variable: 'REMOTE_SERVER'),
                         ]) {
-                            if(BRANCH_NAME =~ /(?i)(main)/ ) {
-                                sshagent(['hiverlab-dillonloh']) {
-                                    sh '''
-                                        ssh dillon@$REMOTE_SERVER "
-                                        cd /home/dillon/auto-datahandler
-                                        echo '/home/dillon/auto-datahandler' "
-                                    '''
-                                }
-                            } else {
-                                echo "Invalid branch detected"
-                                return
-                            }
+                        sshagent(['hiverlab-dillonloh']) {
+                            sh '''
+                                ssh dillon@$REMOTE_SERVER "
+                                cd $deployPath
+                                echo $deployPath "
+                            '''
+                        }
                     }
                 }
             }
