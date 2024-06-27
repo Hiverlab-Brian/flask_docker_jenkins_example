@@ -79,21 +79,32 @@ pipeline {
             steps {
                 echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
                 script {
-                    def deployPath = BRANCH_NAME =~ /(?i)(main)/ ? '/home/dillon/auto-datahandler' : '/home/dillon/dev/DEV-auto-datahandler'
-                    echo "${deployPath}"
-                    echo "$deployPath"
                     withCredentials([
                         sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
                         file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
                         string(credentialsId: 'brian-vlsdemo-vm-ip', variable: 'REMOTE_SERVER'),
                         ]) {
-                        sshagent(['hiverlab-dillonloh']) {
-                            sh '''
-                                ssh dillon@$REMOTE_SERVER "
-                                cd $deployPath
-                                echo $deployPath "
-                            '''
-                        }
+                            if(BRANCH_NAME == 'main') {
+                                sshagent(['hiverlab-dillonloh']) {
+                                    sh '''
+                                        ssh dillon@$REMOTE_SERVER "
+                                        cd /home/dillon/auto-datahandler
+                                        echo '/home/dillon/auto-datahandler' "
+                                    '''
+                                }
+                            } else if (BRANCH_NAME == 'dev') {
+                                sshagent(['hiverlab-dillonloh']) {
+                                    sh '''
+                                        ssh dillon@$REMOTE_SERVER "
+                                        cd /home/dillon/dev/DEV-auto-datahandler
+                                        echo '/home/dillon/dev/DEV-auto-datahandler' "
+                                    '''
+                                }
+                            }
+                            else {
+                                echo "Invalid branch detected"
+                                return
+                            }
                     }
                 }
             }
