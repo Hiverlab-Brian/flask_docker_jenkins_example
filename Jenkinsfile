@@ -22,6 +22,7 @@ pipeline {
                 script {
                     def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
                     echo "Commit message: ${commitMessage}"
+                    // check if the conventional commit contains "refactor" or "style" 
                     def skipBuild = commitMessage =~ /(?i)(refactor|style)/
                     if (skipBuild) {
                         error("Skipping build due to non-essential changes: ${commitMessage}")
