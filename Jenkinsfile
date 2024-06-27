@@ -24,9 +24,9 @@ pipeline {
                     def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
                     echo "Commit message: ${commitMessage}"
                     // check if the conventional commit contains "refactor" or "style" 
-                    def skipBuild = commitMessage =~ /(?i)(refactor|style)/
-                    if (skipBuild) {
-                        echo "commit skippable?: ${skipBuild}"
+                    def matcher  = commitMessage =~ /(?i)(refactor|style)/
+                    if (matcher.find()) {
+                        echo "commit skippable?: ${matcher.find()}"
                         echo "Skipping build due to non-essential changes: ${commitMessage}"
                         SKIP="TRUE"
                         return // Exit stage gracefully
