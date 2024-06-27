@@ -90,8 +90,8 @@ pipeline {
                         sshagent(['hiverlab-dillonloh']) {
                             sh '''
                                 ssh dillon@$REMOTE_SERVER "
-                                cd $DEPLOY_PATH
-                                echo $DEPLOY_PATH
+                                cd ${DEPLOY_PATH}
+                                echo ${DEPLOY_PATH}
                                 echo $BRANCH_NAME"
                             '''
                         }
