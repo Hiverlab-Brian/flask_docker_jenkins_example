@@ -27,7 +27,7 @@ pipeline {
                     def matcher  = commitMessage =~ /(?i)(refactor|style)/
                     def match = matcher.find()
                     echo "commit skippable?: ${match}"
-                    if (match) { // if a match is found
+                    if (match) {
                         echo "Skipping build due to non-essential changes: ${commitMessage}"
                         SKIP="TRUE"
                         return // Exit stage gracefully
