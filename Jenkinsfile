@@ -5,18 +5,12 @@ pipeline {
     environment {
         BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
         SKIP = "FALSE"
-        if (BRANCH_NAME == 'main') {
-            DEPLOY_PATH = '/home/dillon/auto-datahandler'
-        } else {
-            DEPLOY_PATH = '/home/dillon/dev/DEV-auto-datahandler'
-        }
     }
 
     stages {
         stage('Checkout') {
             steps {
                 script{
-                    echo "Checking out path: $DEPLOY_PATH"
                     echo "Checking out branch: $BRANCH_NAME"
                     checkout scmGit(branches: [[name: "*/$BRANCH_NAME"]], extensions: [], userRemoteConfigs:
                     [[credentialsId: 'hiverlab-dillonloh', url: 'git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git']])
@@ -83,18 +77,24 @@ pipeline {
             }
             steps {
                 echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
-                withCredentials([
-                    sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
-                    file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
-                    string(credentialsId: 'brian-vlsdemo-vm-ip', variable: 'REMOTE_SERVER'),
-                    ]) {
-                    sshagent(['hiverlab-dillonloh']) {
-                        sh '''
-                            ssh dillon@$REMOTE_SERVER "
-                            cd $DEPLOY_PATH
-                            echo $DEPLOY_PATH
-                            echo $BRANCH_NAME"
-                        '''
+                script {
+                    def DEPLOY_PATH = BRANCH_NAME == 'main' ? '/home/dillon/auto-datahandler' : '/home/dillon/dev/DEV-auto-datahandler'
+                    echo "path: ${DEPLOY_PATH}"
+                    echo "match path: ${BRANCH_NAME == 'main'}"
+
+                    withCredentials([
+                        sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
+                        file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
+                        string(credentialsId: 'brian-vlsdemo-vm-ip', variable: 'REMOTE_SERVER'),
+                        ]) {
+                        sshagent(['hiverlab-dillonloh']) {
+                            sh '''
+                                ssh dillon@$REMOTE_SERVER "
+                                cd $DEPLOY_PATH
+                                echo $DEPLOY_PATH
+                                echo $BRANCH_NAME"
+                            '''
+                        }
                     }
                 }
             }
