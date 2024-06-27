@@ -27,7 +27,7 @@ pipeline {
                     def skipBuild = commitMessage =~ /(?i)(refactor|style)/
                     if (skipBuild) {
                         SKIP = "TRUE"
-                        error("Skipping build due to non-essential changes: ${commitMessage}")
+                        echo("Skipping build due to non-essential changes: ${commitMessage}")
                         return
                     }
                 }
