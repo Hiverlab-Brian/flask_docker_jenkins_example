@@ -87,15 +87,18 @@ pipeline {
                         file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
                         string(credentialsId: 'brian-vlsdemo-vm-ip', variable: 'REMOTE_SERVER'),
                         ]) {
-                        sshagent(['hiverlab-dillonloh']) {
-                            sh '''
-                                ssh dillon@$REMOTE_SERVER "
-                                cd $DEPLOY_PATH
-                                echo ${DEPLOY_PATH}
-                                echo $DEPLOY_PATH
-                                echo $BRANCH_NAME"
-                            '''
-                        }
+                            if(BRANCH_NAME =~ /(?i)(main)/ ) {
+                                sshagent(['hiverlab-dillonloh']) {
+                                    sh '''
+                                        ssh dillon@$REMOTE_SERVER "
+                                        cd /home/dillon/auto-datahandler
+                                        echo '/home/dillon/auto-datahandler' "
+                                    '''
+                                }
+                            } else {
+                                echo "Invalid branch detected"
+                                return
+                            }
                     }
                 }
             }
