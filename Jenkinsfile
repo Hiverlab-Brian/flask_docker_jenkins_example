@@ -87,7 +87,7 @@ pipeline {
                         ]) {
                         sshagent(['hiverlab-dillonloh']) {
                             sh '''
-                                cd /home/dillon/test/test-application/
+                                cd ${deployPath}
                             '''
                         }
                     }
