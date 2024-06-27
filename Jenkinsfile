@@ -26,9 +26,11 @@ pipeline {
                     // check if the conventional commit contains "refactor" or "style" 
                     def skipBuild = commitMessage =~ /(?i)(refactor|style)/
                     if (skipBuild) {
-                        sh 'export SKIP="TRUE"'
-                        echo("Skipping build due to non-essential changes: ${commitMessage}")
-                        return // exit stage gracefully
+                        echo "Skipping build due to non-essential changes: ${commitMessage}"
+                        withEnv(["SKIP=TRUE"]) {
+                            return // Exit stage gracefully
+                        }
+                    }
                     }
                 }
             }
