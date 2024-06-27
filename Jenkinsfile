@@ -15,7 +15,6 @@ pipeline {
                     echo "Checking out branch: $BRANCH_NAME"
                     checkout scmGit(branches: [[name: "*/$BRANCH_NAME"]], extensions: [], userRemoteConfigs:
                     [[credentialsId: 'hiverlab-dillonloh', url: 'git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git']])
-                    
                     // get conventional commit message 
                     def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
                     echo "Commit message: ${commitMessage}"
