@@ -80,6 +80,8 @@ pipeline {
                 echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
                 script {
                     DEPLOY_PATH = BRANCH_NAME == 'main' ? '/home/dillon/auto-datahandler' : '/home/dillon/dev/DEV-auto-datahandler'
+                    echo "${DEPLOY_PATH}"
+                    echo "$DEPLOY_PATH"
                     withCredentials([
                         sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
                         file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
@@ -88,9 +90,9 @@ pipeline {
                         sshagent(['hiverlab-dillonloh']) {
                             sh '''
                                 ssh dillon@$REMOTE_SERVER "
-                                cd $DEPLOY_PATHv
-                                echo $BRANCH_NAME
-                                echo $DEPLOY_PATH
+                                cd $DEPLOY_PATH
+                                echo "${DEPLOY_PATH}"
+                                echo "$DEPLOY_PATH"
                                 echo $BRANCH_NAME"
                             '''
                         }
