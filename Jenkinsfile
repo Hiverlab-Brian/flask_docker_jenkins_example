@@ -76,6 +76,8 @@ pipeline {
         }
         always {
             echo 'Pipeline completed.'
+            sh 'docker system prune -af --volumes'
+
         }
     }
 }
