@@ -29,7 +29,7 @@ pipeline {
                         if (!fileExists('docker-compose.yaml')) {
                             error "docker-compose.yaml not found"
                         }
-                        sh "docker compose -f docker-compose.yaml up --abort-on-container-exit --exit-code-from test"
+                        sh "docker compose -f docker-compose.yaml up --abort-on-container-exit --exit-code-from test --no-cache"
                     }
                 }
             }
@@ -76,8 +76,6 @@ pipeline {
         }
         always {
             echo 'Pipeline completed.'
-            sh 'docker system prune -af --volumes'
-
         }
     }
 }
