@@ -26,10 +26,10 @@ pipeline {
                     // check if the conventional commit contains "refactor" or "style" 
                     def skipBuild = commitMessage =~ /(?i)(refactor|style)/
                     if (skipBuild) {
+                        echo "commit skippable?: ${skipBuild}"
                         echo "Skipping build due to non-essential changes: ${commitMessage}"
-                        withEnv(["SKIP=TRUE"]) {
-                            return // Exit stage gracefully
-                        }
+                        SKIP="TRUE"
+                        return // Exit stage gracefully
                     }
                 }
             }
@@ -37,7 +37,7 @@ pipeline {
 
         stage('Build') {
             when {
-                expression { env.SKIP == "FALSE" }
+                expression { SKIP == "FALSE" }
             }
             steps {
                 withCredentials([file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE')]) {
@@ -65,7 +65,7 @@ pipeline {
 
         stage("Test") {
             when {
-                expression { env.SKIP == "FALSE" }
+                expression { SKIP == "FALSE" }
             }
             steps {
                 junit keepProperties: true, skipMarkingBuildUnstable: true, stdioRetention: '', testResults: 'xmlReport/output.xml'
@@ -77,7 +77,7 @@ pipeline {
 
         stage('Deploy') {
             when {
-                expression { env.SKIP == "FALSE" }
+                expression { SKIP == "FALSE" }
             }
             steps {
                 echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
