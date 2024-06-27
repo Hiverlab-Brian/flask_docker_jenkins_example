@@ -14,13 +14,7 @@ pipeline {
                     echo "Checking out branch: $BRANCH_NAME"
                     checkout scmGit(branches: [[name: "*/$BRANCH_NAME"]], extensions: [], userRemoteConfigs:
                     [[credentialsId: 'hiverlab-dillonloh', url: 'git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git']])
-                }
-            }
-        }
-
-        stage('Check Commit Message') {
-            steps {
-                script {
+                    
                     def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
                     echo "Commit message: ${commitMessage}"
                     // check if the conventional commit contains "refactor" or "style" 
@@ -35,7 +29,7 @@ pipeline {
                 }
             }
         }
-
+        
         stage('Build') {
             when {
                 expression { SKIP == "FALSE" }
