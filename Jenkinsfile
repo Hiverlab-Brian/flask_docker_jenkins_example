@@ -28,7 +28,7 @@ pipeline {
                     if (skipBuild) {
                         env.SKIP = "TRUE"
                         echo("Skipping build due to non-essential changes: ${commitMessage}")
-                        return
+                        return // exit stage gracefully
                     }
                 }
             }
