@@ -20,7 +20,7 @@ pipeline {
                     def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
                     echo "Commit message: ${commitMessage}"
                     // check if the conventional commit message contains "refactor" or "style" 
-                    def matcher  = commitMessage =~ /(?i)(refactor|style)/
+                    def matcher = commitMessage =~ /(?i)(refactor|style)/
                     def match = matcher.find()
                     echo "commit skippable?: ${match}"
                     if (match) {
@@ -91,8 +91,8 @@ pipeline {
                             sh '''
                                 ssh dillon@$REMOTE_SERVER "
                                 cd $DEPLOY_PATH
-                                echo "${DEPLOY_PATH}"
-                                echo "$DEPLOY_PATH"
+                                echo ${DEPLOY_PATH}
+                                echo $DEPLOY_PATH
                                 echo $BRANCH_NAME"
                             '''
                         }
