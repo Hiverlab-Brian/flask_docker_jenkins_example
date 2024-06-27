@@ -12,8 +12,8 @@ pipeline {
                 script{
                     def branchName = env.BRANCH_NAME
                     echo "Checking out branch: ${branchName}"
-                    echo "Checking out branch: $branchName"
-                    checkout scmGit(branches: [[name: "*/${branchName}"]], extensions: [], userRemoteConfigs:
+                    echo "Checking out branch: $BRANCH_NAME"
+                    checkout scmGit(branches: [[name: "*/$BRANCH_NAME"]], extensions: [], userRemoteConfigs:
                     [[credentialsId: 'hiverlab-dillonloh', url: 'git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git']])
                 }
             }
