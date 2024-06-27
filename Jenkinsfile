@@ -2,18 +2,12 @@ pipeline {
 
     agent any
 
-    environment {
-        BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
-    }
-
     stages {
         stage('Checkout') {
             steps {
                 script{
                     def branchName = env.BRANCH_NAME
-                    echo "Checking out branch: ${branchName}"
-                    echo "Checking out branch: $BRANCH_NAME"
-                    checkout scmGit(branches: [[name: "*/$BRANCH_NAME"]], extensions: [], userRemoteConfigs:
+                    checkout scmGit(branches: [[name: "*/$branchName"]], extensions: [], userRemoteConfigs:
                     [[credentialsId: 'hiverlab-dillonloh', url: 'git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git']])
                 }
             }
@@ -22,14 +16,12 @@ pipeline {
         stage('Check Commit Message') {
             steps {
                 script {
-                    // Assuming the payload contains a field named 'commitMessage'
-                    def commitMessage = currentBuild.rawBuild.getCause(hudson.model.Cause).getShortDescription()
-                    if (!commitMessage.contains("chore")) {
-                        echo "Commit message contains 'chore', skipping build."
-                        currentBuild.result = 'ABORTED'
-                        return
+                    def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                    echo "Commit message: ${commitMessage}"
+                    def skipBuild = commitMessage =~ /(?i)(refactor|style)/
+                    if (skipBuild) {
+                        error("Skipping build due to non-essential changes: ${commitMessage}")
                     }
-                    echo "Proceeding with build..."
                 }
             }
         }
