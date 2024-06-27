@@ -5,6 +5,7 @@ pipeline {
     environment {
         BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
         SKIP = "FALSE"
+        DEPLOY_PATH = ""
     }
 
     stages {
@@ -78,10 +79,7 @@ pipeline {
             steps {
                 echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
                 script {
-                    def DEPLOY_PATH = BRANCH_NAME == 'main' ? '/home/dillon/auto-datahandler' : '/home/dillon/dev/DEV-auto-datahandler'
-                    echo "path: ${DEPLOY_PATH}"
-                    echo "match path: ${BRANCH_NAME == 'main'}"
-
+                    DEPLOY_PATH = BRANCH_NAME == 'main' ? '/home/dillon/auto-datahandler' : '/home/dillon/dev/DEV-auto-datahandler'
                     withCredentials([
                         sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
                         file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
@@ -90,8 +88,9 @@ pipeline {
                         sshagent(['hiverlab-dillonloh']) {
                             sh '''
                                 ssh dillon@$REMOTE_SERVER "
-                                cd ${DEPLOY_PATH}
-                                echo ${DEPLOY_PATH}
+                                cd $DEPLOY_PATHv
+                                echo $BRANCH_NAME
+                                echo $DEPLOY_PATH
                                 echo $BRANCH_NAME"
                             '''
                         }
