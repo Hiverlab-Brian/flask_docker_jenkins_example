@@ -31,7 +31,6 @@ pipeline {
                             return // Exit stage gracefully
                         }
                     }
-                    }
                 }
             }
         }
