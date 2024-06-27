@@ -47,21 +47,21 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
-                withCredentials([
-                    sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
-                    file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
-                    string(credentialsId: 'brian-vlsdemo-vm-ip', variable: 'REMOTE_SERVER'),
-                    ]) {
-                    sshagent(['hiverlab-dillonloh']) {
-                        sh '''
-                            ssh dillon@$REMOTE_SERVER "
-                            if [ ! -d "/home/dillon/test/test-application/.git" ]; then
-                                git clone git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git /home/dillon/test/test-application;
-                            fi &&
-                            cd /home/dillon/test/test-application/ && 
-                            git pull origin main"
-                        '''
-                    }
+                // withCredentials([
+                //     sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
+                //     file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
+                //     string(credentialsId: 'brian-vlsdemo-vm-ip', variable: 'REMOTE_SERVER'),
+                //     ]) {
+                //     sshagent(['hiverlab-dillonloh']) {
+                //         sh '''
+                //             ssh dillon@$REMOTE_SERVER "
+                //             if [ ! -d "/home/dillon/test/test-application/.git" ]; then
+                //                 git clone git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git /home/dillon/test/test-application;
+                //             fi &&
+                //             cd /home/dillon/test/test-application/ && 
+                //             git pull origin main"
+                //         '''
+                //     }
                }
             }
         }
