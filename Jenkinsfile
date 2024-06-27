@@ -81,7 +81,6 @@ pipeline {
                 script {
                     withCredentials([
                         sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
-                        file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE'),
                         string(credentialsId: 'brian-vlsdemo-vm-ip', variable: 'REMOTE_SERVER'),
                         ]) {
                             if(BRANCH_NAME == 'main') {
@@ -100,8 +99,7 @@ pipeline {
                                         echo '/home/dillon/dev/DEV-auto-datahandler' "
                                     '''
                                 }
-                            }
-                            else {
+                            } else {
                                 echo "Invalid branch detected"
                                 return
                             }
