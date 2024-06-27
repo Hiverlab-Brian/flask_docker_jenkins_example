@@ -5,8 +5,24 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs:
+                def branchName = env.BRANCH_NAME
+                checkout scmGit(branches: [[name: '*/${branchName}']], extensions: [], userRemoteConfigs:
                                 [[credentialsId: 'hiverlab-dillonloh', url: 'git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git']])
+            }
+        }
+
+        stage('Check Commit Message') {
+            steps {
+                script {
+                    // Assuming the payload contains a field named 'commitMessage'
+                    def commitMessage = currentBuild.rawBuild.getCause(hudson.model.Cause).getShortDescription()
+                    if (!commitMessage.contains("chore")) {
+                        echo "Commit message contains 'chore', skipping build."
+                        currentBuild.result = 'ABORTED'
+                        return
+                    }
+                    echo "Proceeding with build..."
+                }
             }
         }
 
