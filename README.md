@@ -65,6 +65,12 @@ This stage involves running various tests to ensure the project is fully tested.
 ### Deploy Stage
 This stage handles the deployment of the project, fulfilling the Continuous Deployment (CD) process.
 
+#### Configuration:
+- Ensure that the deployment environment allows for the following:
+    - git actions enabled under the deployment git account
+    - ssh-ing allowed with deployment credentials
+- Include appropriate bash scripts for successful deployment
+
 ### (Optional) Post Block
 The post block is used to handle actions that should be taken after the pipeline execution. It can include three common conditions: `always{}`, `success{}`, and `failure{}`.
 
