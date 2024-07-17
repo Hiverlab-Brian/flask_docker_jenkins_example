@@ -5,21 +5,22 @@ pipeline {
     environment {
         BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
         SKIP = "FALSE"
-        DEPLOY_PATH = ""
     }
 
     stages {
-        stage('Checkout') {
+        stage('checkout') {
             steps {
                 script{
                     echo "Checking out branch: $BRANCH_NAME"
-                    checkout scmGit(branches: [[name: "*/$BRANCH_NAME"]], extensions: [], userRemoteConfigs:
-                    [[credentialsId: 'hiverlab-dillonloh', url: 'git@github.com:Hiverlab-Brian/flask_docker_jenkins_example.git']])
+                    checkout scmGit(branches: [[name: "*/$BRANCH_NAME"]], extensions: [], userRemoteConfigs: 
+                    [[credentialsId: 'hiverlab-deployment', url: 'git@github.com:HiverlabResearchAndDevelopment/IFC_Converter.git']])
+                    
                     // get conventional commit message 
                     def commitMessage = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
                     echo "Commit message: ${commitMessage}"
+
                     // check if the conventional commit message contains "refactor" or "style" 
-                    def matcher = commitMessage =~ /(?i)(refactor|style)/
+                    def matcher  = commitMessage =~ /(?i)(refactor|style|ci)/
                     def match = matcher.find()
                     echo "commit skippable?: ${match}"
                     if (match) {
@@ -36,25 +37,20 @@ pipeline {
                 expression { SKIP == "FALSE" }
             }
             steps {
-                withCredentials([file(credentialsId: 'auto-datahandler-env', variable: 'SECRET_ENV_FILE')]) {
+                script {               
                     script {
-                        // Read the secret file and write its contents to .env file
-                        sh 'cat $SECRET_ENV_FILE > .env'
-                        
-                        script {
-                            def containers = sh(script: 'docker ps -a | grep ${JOB_NAME} | awk \'{print $1}\'', returnStdout: true).trim()
-                            if (containers) {
-                                sh "docker stop ${containers} || true"
-                                sh "docker rm ${containers} || true"
-                            }
+                        def containers = sh(script: 'docker ps -a | grep ${JOB_NAME} | awk \'{print $1}\'', returnStdout: true).trim()
+                        if (containers) {
+                            sh "docker stop ${containers} || true"
+                            sh "docker rm ${containers} || true"
                         }
-
-                        // Ensure docker-compose.yml is present
-                        if (!fileExists('docker-compose.yaml')) {
-                            error "docker-compose.yaml not found"
-                        }
-                        sh "docker compose -f docker-compose.yaml up --abort-on-container-exit --exit-code-from test"
                     }
+
+                    // Ensure docker-compose.yml is present
+                    if (!fileExists('docker-compose.yaml')) {
+                        error "docker-compose.yaml not found"
+                    }
+                    sh "docker compose -f docker-compose.yaml up --abort-on-container-exit --exit-code-from test"
                 }
             }
         }
@@ -71,31 +67,35 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage("Deploy") {
             when {
                 expression { SKIP == "FALSE" }
             }
             steps {
-                echo "Deploying to test/test-application @ vlsdemo, /home/dillon/test/test-application"
                 script {
+                    echo "Deploying to demo application to $BRANCH_NAME Environment @ vlsdemo"
                     withCredentials([
-                        sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-key', keyFileVariable: 'SSH_KEY'),
+                        sshUserPrivateKey(credentialsId: 'vlsdemo-ssh-deployment-acc', keyFileVariable: 'SSH_KEY'),
                         string(credentialsId: 'brian-vlsdemo-vm-ip', variable: 'REMOTE_SERVER'),
                         ]) {
                             if(BRANCH_NAME == 'main') {
-                                sshagent(['hiverlab-dillonloh']) {
+                                sshagent(['hiverlab-deployment']) {
                                     sh '''
-                                        ssh dillon@$REMOTE_SERVER "
-                                        cd /home/dillon/auto-datahandler
-                                        echo '/home/dillon/auto-datahandler' "
+                                        ssh deployment@$REMOTE_SERVER "
+                                        cd /home/deployment/prod/flask_docker_jenkins_example && 
+                                        git pull origin $BRANCH_NAME && 
+                                        docker-compose down && 
+                                        docker-compose up -d --build"
                                     '''
                                 }
                             } else if (BRANCH_NAME == 'dev') {
-                                sshagent(['hiverlab-dillonloh']) {
+                                sshagent(['hiverlab-deployment']) {
                                     sh '''
-                                        ssh dillon@$REMOTE_SERVER "
-                                        cd /home/dillon/dev/DEV-auto-datahandler
-                                        echo '/home/dillon/dev/DEV-auto-datahandler' "
+                                        ssh deployment@$REMOTE_SERVER "
+                                        cd /home/deployment/dev/flask_docker_jenkins_example && 
+                                        git pull origin $BRANCH_NAME && 
+                                        docker-compose down && 
+                                        docker-compose up -d --build"
                                     '''
                                 }
                             } else {
